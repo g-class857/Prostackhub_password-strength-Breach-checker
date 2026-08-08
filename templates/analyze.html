@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <div class="text-center mb-5">
+        <h2>Password Security Analyzer</h2>
+        <p class="text-muted">
+            Analyze password strength, entropy and breach exposure.
+        </p>
+    </div>
+
+    <!-- ====================== -->
+    <!-- Password Form -->
+    <!-- ====================== -->
+
+    <div class="card shadow mb-4">
+
+        <div class="card-body">
+
+            <form action="/analyze" method="POST">
+
+    <label class="form-label fw-bold">
+        Password
+    </label>
+
+    <input
+        class="form-control form-control-lg"
+        type="password"
+        name="password"
+        placeholder="Enter password"
+        required
+    >
+
+    <!-- Optional Email -->
+
+    <div class="mt-4">
+
+        <label
+            for="email"
+            class="form-label fw-bold">
+
+            Email Address
+            <span class="text-muted fw-normal">
+                (Optional)
+            </span>
+
+        </label>
+
+        <input
+            id="email"
+            class="form-control"
+            type="email"
+            name="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+        >
+
+        <div class="form-text">
+            Check whether this email address appears
+            in known data breaches.
+        </div>
+
+    </div>
+
+
+    <!-- HIBP API Key -->
+
+    <div class="mt-3">
+
+        <label
+            for="hibp_api_key"
+            class="form-label fw-bold">
+
+            HIBP API Key
+            <span class="text-muted fw-normal">
+                (Required for email breach checking)
+            </span>
+
+        </label>
+
+        <input
+            id="hibp_api_key"
+            class="form-control"
+            type="password"
+            name="hibp_api_key"
+            placeholder="Enter your HIBP API key"
+            autocomplete="new-password"
+        >
+
+        <div class="form-text">
+
+            Your API key is used only for this request
+            and is not stored by the application.
+
+        </div>
+
+    </div>
+
+
+    <button
+        class="btn btn-primary mt-3"
+        type="submit">
+
+        Analyze
+
+    </button>
+
+</form>
+
+        </div>
+
+    </div>
+
+    {% if report %}
+    	{% include "partials/analysis_report.html" %}
+    {% endif %}
+</div>
+{% endblock %}

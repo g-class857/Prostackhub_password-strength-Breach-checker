@@ -1,0 +1,27 @@
+Phase 1 (Required)
+✅ Email breach check (HIBP API)
+✅ Watchdog log monitoring
+Phase 2 (High value)
+Add password history search/filter
+Export charts into PDF reports
+Dashboard notifications for new security events
+
+Part 1 — Email Breach Check
+Add optional email field to the Analyze page.
+Create modules/email_breach_checker.py.
+Support both HIBP (when an API key is configured) and a local demo dataset fallback.
+Display breach names and count in the report.
+
+	modules/email_breach_checker.py (complete HIBP client)
+	Add the email field to analyze.html
+	Update analysis_service.py
+	Display email breach results in analysis_report.html
+	Extend exports
+	Add logging
+	Build the Watchdog service
+	
+Part 2 — Watchdog
+Create a logs/ directory.
+Enhance your existing logging so every analysis appends to logs/security.log.
+Build watcher/log_watcher.py using the watchdog package.
+Show real-time detection of new log entries in the console (and optionally extend it later).

@@ -1,0 +1,57 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.btn-primary {
+    border-radius: 8px;
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+canvas {
+    max-height: 350px;
+}
+.stat-card{
+
+    transition: all .25s ease;
+
+    border-radius:16px;
+
+}
+
+.stat-card:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:0 12px 24px rgba(0,0,0,.15);
+
+}
+.table{
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+}
+
+.table tbody tr:hover{
+
+    background:#f8f9fa;
+
+}

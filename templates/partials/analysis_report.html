@@ -1,0 +1,1704 @@
+{# ============================================================= #}
+{# Password Security Analysis Report                             #}
+{# Shared by analyze.html and generator.html                     #}
+{# ============================================================= #}
+
+{% if report %}
+
+{% set strength = report.strength %}
+{% set rules = report.rules %}
+{% set breach = report.breach %}
+{% set entropy = report.entropy %}
+{% set email = report.email_breach %}
+
+<div class="card shadow-lg border-0 mb-4">
+
+    <div class="card-header bg-dark text-white py-3">
+
+        <h3 class="mb-0">
+
+            <i class="bi bi-shield-lock-fill me-2"></i>
+
+            Password Security Report
+
+        </h3>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================== -->
+<!-- Summary Cards -->
+<!-- ========================================================== -->
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4 mb-4">
+
+    <!-- Overall Status -->
+
+    <div class="col">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body text-center">
+
+                <h6 class="text-muted mb-3">
+
+                    Overall Status
+
+                </h6>
+
+                {% if breach.breached %}
+
+                    <span class="badge bg-danger fs-6 px-3 py-2">
+
+                        High Risk
+
+                    </span>
+
+                {% elif rules.passed and strength.score >= 3 %}
+
+                    <span class="badge bg-success fs-6 px-3 py-2">
+
+                        Strong Password
+
+                    </span>
+
+                {% else %}
+
+                    <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+
+                        Needs Improvement
+
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Strength Score -->
+
+    <div class="col">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body text-center">
+
+                <h6 class="text-muted mb-3">
+
+                    Strength Score
+
+                </h6>
+
+                <h1 class="display-5 fw-bold text-primary">
+
+                    {{ strength.score }}/4
+
+                </h1>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Entropy -->
+
+    <div class="col">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body text-center">
+
+                <h6 class="text-muted mb-3">
+
+                    Entropy
+
+                </h6>
+
+                <h1 class="display-5 fw-bold text-info">
+
+                    {{ "%.2f"|format(entropy.entropy) }}
+
+                </h1>
+
+                <small class="text-muted">
+
+                    bits
+
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Password Breach -->
+
+    <div class="col">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body text-center">
+
+                <h6 class="text-muted mb-3">
+
+                    Password Breach
+
+                </h6>
+
+                {% if breach.breached %}
+
+                    <h2 class="fw-bold text-danger">
+
+                        {{ "{:,}".format(breach.count) }}
+
+                    </h2>
+
+                    <small class="text-danger">
+
+                        Known Breaches
+
+                    </small>
+
+                {% else %}
+
+                    <h2 class="fw-bold text-success">
+
+                        Safe
+
+                    </h2>
+
+                    <small class="text-success">
+
+                        Not Found
+
+                    </small>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ========================================================== -->
+<!-- Password Strength -->
+<!-- ========================================================== -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-primary text-white">
+
+        <strong>
+
+            <i class="bi bi-speedometer2 me-2"></i>
+
+            Password Strength Assessment
+
+        </strong>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="progress mb-4" style="height: 30px;">
+
+            <div
+                class="progress-bar
+                    {% if strength.score == 0 %}
+                        bg-danger
+                    {% elif strength.score == 1 %}
+                        bg-warning
+                    {% elif strength.score == 2 %}
+                        bg-info
+                    {% else %}
+                        bg-success
+                    {% endif %}"
+
+                role="progressbar"
+
+                style="width: {{ ((strength.score + 1) / 5 * 100)|round }}%;">
+
+                {{ strength.score }}/4
+
+            </div>
+
+        </div>
+
+        <div class="row g-3">
+
+            <div class="col-md-4">
+
+                <div class="border rounded p-3 text-center h-100">
+
+                    <small class="text-muted">
+
+                        Entropy
+
+                    </small>
+
+                    <h4 class="mt-2 mb-0">
+
+                        {{ "%.2f"|format(entropy.entropy) }}
+
+                    </h4>
+
+                    <small class="text-muted">
+
+                        bits
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <div class="border rounded p-3 text-center h-100">
+
+                    <small class="text-muted">
+
+                        Estimated Guesses
+
+                    </small>
+
+                    <h4 class="mt-2 mb-0">
+
+                        {{ "{:,}".format(strength.guesses) }}
+
+                    </h4>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <div class="border rounded p-3 text-center h-100">
+
+                    <small class="text-muted">
+
+                        Security Rating
+
+                    </small>
+
+                    <h5 class="mt-3">
+
+                        {% if strength.score == 4 %}
+
+                            <span class="text-success">
+
+                                Excellent
+
+                            </span>
+
+                        {% elif strength.score == 3 %}
+
+                            <span class="text-primary">
+
+                                Strong
+
+                            </span>
+
+                        {% elif strength.score == 2 %}
+
+                            <span class="text-info">
+
+                                Moderate
+
+                            </span>
+
+                        {% elif strength.score == 1 %}
+
+                            <span class="text-warning">
+
+                                Weak
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="text-danger">
+
+                                Very Weak
+
+                            </span>
+
+                        {% endif %}
+
+                    </h5>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================== -->
+<!-- Password Policy -->
+<!-- ========================================================== -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-success text-white">
+
+        <strong>
+
+            <i class="bi bi-check2-circle me-2"></i>
+
+            Password Policy Compliance
+
+        </strong>
+
+    </div>
+
+    <div class="card-body">
+
+        {% if rules.passed %}
+
+            <div class="alert alert-success mb-0">
+
+                <i class="bi bi-check-circle-fill me-2"></i>
+
+                This password satisfies all configured security requirements.
+
+            </div>
+
+        {% else %}
+
+            <div class="alert alert-warning">
+
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+                The following requirements are not satisfied:
+
+            </div>
+
+            <ul class="list-group">
+
+                {% for issue in rules.issues %}
+
+                    <li class="list-group-item d-flex align-items-center">
+
+                        <i class="bi bi-x-circle-fill text-danger me-2"></i>
+
+                        {{ issue }}
+
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+<!-- ========================================================== -->
+<!-- Password Breach Details -->
+<!-- ========================================================== -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-danger text-white">
+
+        <strong>
+
+            <i class="bi bi-shield-exclamation me-2"></i>
+
+            Password Breach Analysis
+
+        </strong>
+
+    </div>
+
+    <div class="card-body">
+
+        {% if breach.breached %}
+
+            <div class="alert alert-danger">
+
+                <h5 class="mb-2">
+
+                    Password Compromised
+
+                </h5>
+
+                <p class="mb-2">
+
+                    This password was found in
+
+                    <strong>
+
+                        {{ "{:,}".format(breach.count) }}
+
+                    </strong>
+
+                    publicly disclosed data breaches.
+
+                </p>
+
+                <p class="mb-0">
+
+                    Attackers frequently prioritize breached passwords
+                    during credential stuffing and dictionary attacks.
+
+                    This password should not be used.
+
+                </p>
+
+            </div>
+
+        {% else %}
+
+            <div class="alert alert-success mb-0">
+
+                <h5>
+
+                    <i class="bi bi-check-circle-fill me-2"></i>
+
+                    No Password Breach Detected
+
+                </h5>
+
+                <p class="mb-0">
+
+                    This password was not found in the
+                    Have I Been Pwned password database.
+
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+<!-- ====================== -->
+<!-- Email Breach Check -->
+<!-- ====================== -->
+
+<div class="card shadow mb-4">
+
+    <div class="card-header">
+        <strong>
+            <i class="bi bi-envelope-exclamation me-2"></i>
+            Email Breach Check
+        </strong>
+    </div>
+
+    <div class="card-body">
+
+        {% set email_breach = report.email_breach %}
+
+        <!-- No email supplied -->
+
+        {% if not email_breach.checked and email_breach.error is none %}
+
+            <div class="alert alert-secondary mb-0">
+
+                <div class="fw-bold mb-1">
+                    <i class="bi bi-dash-circle me-2"></i>
+                    Email Breach Check Not Performed
+                </div>
+
+                <small>
+                    No email address was supplied for breach checking.
+                </small>
+
+            </div>
+
+
+        <!-- Missing API key -->
+
+        {% elif email_breach.error == "api_key_missing" %}
+
+            <div class="alert alert-warning mb-0">
+
+                <div class="fw-bold mb-1">
+                    <i class="bi bi-key me-2"></i>
+                    HIBP API Key Required
+                </div>
+
+                <small>
+                    An HIBP API key is required to check an email
+                    address against the breach database.
+                </small>
+
+            </div>
+
+
+        <!-- Invalid email -->
+
+        {% elif email_breach.error == "invalid_email" %}
+
+            <div class="alert alert-danger mb-0">
+
+                <div class="fw-bold mb-1">
+                    <i class="bi bi-x-circle me-2"></i>
+                    Invalid Email Address
+                </div>
+
+                <small>
+                    The supplied email address is not valid.
+                    Please enter a valid email address.
+                </small>
+
+            </div>
+
+
+        <!-- Invalid API key -->
+
+        {% elif email_breach.error == "invalid_api_key" %}
+
+            <div class="alert alert-danger mb-0">
+
+                <div class="fw-bold mb-1">
+                    <i class="bi bi-key-fill me-2"></i>
+                    Invalid HIBP API Key
+                </div>
+
+                <small>
+                    Have I Been Pwned rejected the supplied API key.
+                    Verify the key and try again.
+                </small>
+
+            </div>
+
+
+        <!-- Forbidden -->
+
+        {% elif email_breach.error == "forbidden" %}
+
+            <div class="alert alert-danger mb-0">
+
+                <div class="fw-bold mb-1">
+                    <i class="bi bi-shield-x me-2"></i>
+                    HIBP Request Forbidden
+                </div>
+
+                <small>
+                    The HIBP service refused the request.
+                    Verify your API subscription and permissions.
+                </small>
+
+            </div>
+
+
+        <!-- Rate limited -->
+
+        {% elif email_breach.error == "rate_limited" %}
+
+            <div class="alert alert-warning mb-0">
+
+                <div class="fw-bold mb-1">
+                    <i class="bi bi-hourglass-split me-2"></i>
+                    HIBP Rate Limit Reached
+                </div>
+
+                <small>
+                    Too many requests were made to the HIBP API.
+                    Please wait before trying again.
+                </small>
+
+            </div>
+
+
+        <!-- Timeout -->
+
+        {% elif email_breach.error == "timeout" %}
+
+            <div class="alert alert-warning mb-0">
+
+                <div class="fw-bold mb-1">
+                    <i class="bi bi-clock-history me-2"></i>
+                    HIBP Request Timed Out
+                </div>
+
+                <small>
+                    The breach service did not respond in time.
+                    Please try again.
+                </small>
+
+            </div>
+
+
+        <!-- Connection error -->
+
+        {% elif email_breach.error == "connection_error" %}
+
+            <div class="alert alert-warning mb-0">
+
+                <div class="fw-bold mb-1">
+                    <i class="bi bi-wifi-off me-2"></i>
+                    HIBP Connection Error
+                </div>
+
+                <small>
+                    The application could not connect to the
+                    Have I Been Pwned service.
+                </small>
+
+            </div>
+
+
+        <!-- API server error -->
+
+        {% elif email_breach.error == "api_server_error" %}
+
+            <div class="alert alert-warning mb-0">
+
+                <div class="fw-bold mb-1">
+                    <i class="bi bi-cloud-slash me-2"></i>
+                    HIBP Service Error
+                </div>
+
+                <small>
+                    The Have I Been Pwned service returned a
+                    server-side error. Please try again later.
+                </small>
+
+            </div>
+
+
+        <!-- Generic API error -->
+
+        {% elif email_breach.error %}
+
+            <div class="alert alert-danger mb-0">
+
+                <div class="fw-bold mb-1">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Email Breach Check Failed
+                </div>
+
+                <small>
+                    The email breach check could not be completed.
+                    Error: {{ email_breach.error }}
+                </small>
+
+            </div>
+
+
+        <!-- Email breached -->
+
+        {% elif email_breach.breached %}
+
+            <div class="alert alert-danger">
+
+                <div class="d-flex align-items-center">
+
+                    <i class="bi bi-shield-exclamation fs-3 me-3"></i>
+
+                    <div>
+
+                        <h5 class="alert-heading mb-1">
+                            Email Found in Known Breaches
+                        </h5>
+
+                        <p class="mb-0">
+                            This email address appeared in
+                            <strong>
+                                {{ email_breach.count }}
+                            </strong>
+                            known data breach{% if email_breach.count != 1 %}es{% endif %}.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Breach list -->
+
+            {% if email_breach.breaches %}
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead class="table-light">
+
+                            <tr>
+                                <th>Breach</th>
+                                <th>Date</th>
+                                <th>Domain</th>
+                                <th>Compromised Data</th>
+                                <th>Verified</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for breach in email_breach.breaches %}
+
+                                <tr>
+
+                                    <td>
+                                        <strong>
+                                            {{ breach.title or breach.name or "Unknown Breach" }}
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        {{ breach.date or "Unknown" }}
+                                    </td>
+
+                                    <td>
+                                        {{ breach.domain or "N/A" }}
+                                    </td>
+
+                                    <td>
+
+                                        {% if breach.data_classes %}
+
+                                            {% for data_type in breach.data_classes %}
+
+                                                <span class="badge bg-secondary me-1 mb-1">
+                                                    {{ data_type }}
+                                                </span>
+
+                                            {% endfor %}
+
+                                        {% else %}
+
+                                            <span class="text-muted">
+                                                Not specified
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td>
+
+                                        {% if breach.is_verified %}
+
+                                            <span class="badge bg-success">
+                                                Verified
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge bg-secondary">
+                                                Unverified
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% endif %}
+
+
+        <!-- Email not breached -->
+
+        {% else %}
+
+            <div class="alert alert-success mb-0">
+
+                <div class="fw-bold mb-1">
+
+                    <i class="bi bi-shield-check me-2"></i>
+
+                    No Breach Found
+
+                </div>
+
+                <small>
+                    The supplied email address was not found
+                    in the HIBP breach database.
+                </small>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+<!-- ========================================================== -->
+<!-- Email Breach Check -->
+<!-- ========================================================== -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-info text-white">
+
+        <strong>
+
+            <i class="bi bi-envelope-exclamation me-2"></i>
+
+            Email Breach Check
+
+        </strong>
+
+    </div>
+
+    <div class="card-body">
+
+        {% if email is not defined %}
+
+            <div class="alert alert-secondary mb-0">
+
+                No email was supplied for this analysis.
+
+            </div>
+
+        {% elif not email.enabled %}
+
+            <div class="alert alert-secondary mb-0">
+
+                <h5>
+
+                    Email Lookup Disabled
+
+                </h5>
+
+                <p class="mb-0">
+
+                    {{ email.message }}
+
+                </p>
+
+            </div>
+
+        {% elif not email.checked %}
+
+            <div class="alert alert-warning mb-0">
+
+                <h5>
+
+                    Email Lookup Failed
+
+                </h5>
+
+                <p class="mb-0">
+
+                    {{ email.message }}
+
+                </p>
+
+            </div>
+
+        {% elif email.breached %}
+
+            <div class="alert alert-danger">
+
+                <h5>
+
+                    Email Found in Public Breaches
+
+                </h5>
+
+                <p>
+
+                    This email address appears in
+
+                    <strong>
+
+                        {{ email.count }}
+
+                    </strong>
+
+                    known breaches.
+
+                </p>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th style="width:70px">
+
+                                #
+
+                            </th>
+
+                            <th>
+
+                                Breach Name
+
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for item in email.breaches %}
+
+                        <tr>
+
+                            <td>
+
+                                {{ loop.index }}
+
+                            </td>
+
+                            <td>
+
+                                {{ item }}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="alert alert-success mb-0">
+
+                <h5>
+
+                    <i class="bi bi-check-circle-fill me-2"></i>
+
+                    No Email Breach Detected
+
+                </h5>
+
+                <p class="mb-0">
+
+                    This email address was not found in any known public breach.
+
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+<!-- ========================================================== -->
+<!-- zxcvbn Security Feedback -->
+<!-- ========================================================== -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-warning">
+
+        <strong>
+
+            <i class="bi bi-lightbulb-fill me-2"></i>
+
+            Security Recommendations
+
+        </strong>
+
+    </div>
+
+    <div class="card-body">
+
+        {% if strength.feedback.warning %}
+
+            <div class="alert alert-warning">
+
+                <strong>
+
+                    Primary Warning
+
+                </strong>
+
+                <hr>
+
+                {{ strength.feedback.warning }}
+
+            </div>
+
+        {% endif %}
+
+        {% if strength.feedback.suggestions %}
+
+            <h6 class="mb-3">
+
+                Recommended Improvements
+
+            </h6>
+
+            <ul class="list-group">
+
+                {% for suggestion in strength.feedback.suggestions %}
+
+                    <li class="list-group-item">
+
+                        <i class="bi bi-arrow-right-circle text-primary me-2"></i>
+
+                        {{ suggestion }}
+
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% else %}
+
+            <div class="alert alert-success mb-0">
+
+                <i class="bi bi-check-circle-fill me-2"></i>
+
+                Excellent password.
+
+                No additional improvements are recommended.
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================== -->
+<!-- Estimated Crack Times -->
+<!-- ========================================================== -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-secondary text-white">
+
+        <strong>
+
+            <i class="bi bi-clock-history me-2"></i>
+
+            Estimated Crack Times
+
+        </strong>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle">
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th style="width:45px">
+
+                            <i class="bi bi-hash"></i>
+
+                        </th>
+
+                        <th>
+
+                            Attack Scenario
+
+                        </th>
+
+                        <th>
+
+                            Estimated Time
+
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for scenario, value in strength.crack_time.items() %}
+
+                    <tr>
+
+                        <td>
+
+                            {{ loop.index }}
+
+                        </td>
+
+                        <td>
+
+                            {% if "offline_fast_hashing" in scenario %}
+
+                                <i class="bi bi-cpu me-2 text-danger"></i>
+
+                            {% elif "offline_slow_hashing" in scenario %}
+
+                                <i class="bi bi-hdd-network me-2 text-warning"></i>
+
+                            {% elif "online_no_throttling" in scenario %}
+
+                                <i class="bi bi-wifi me-2 text-info"></i>
+
+                            {% elif "online_throttling" in scenario %}
+
+                                <i class="bi bi-shield-lock me-2 text-success"></i>
+
+                            {% else %}
+
+                                <i class="bi bi-clock me-2"></i>
+
+                            {% endif %}
+
+                            {{ scenario.replace("_", " ").title() }}
+
+                        </td>
+
+                        <td>
+
+                            <span class="fw-bold">
+
+                                {{ value }}
+
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="alert alert-info mt-4 mb-0">
+
+            <i class="bi bi-info-circle-fill me-2"></i>
+
+            Crack-time estimates are generated by
+            <strong>zxcvbn</strong> and represent approximate
+            resistance under different attack scenarios.
+
+            Actual cracking times depend on password hashing
+            algorithms, attacker resources and system defenses.
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ========================================================== -->
+<!-- Guess Count & Password Pattern Analysis -->
+<!-- ========================================================== -->
+
+<div class="row g-4 mb-4">
+
+    <!-- ====================================================== -->
+    <!-- Estimated Guess Count -->
+    <!-- ====================================================== -->
+
+    <div class="col-lg-4">
+
+        <div class="card shadow-sm border-0 h-100">
+
+            <div class="card-header bg-primary text-white">
+
+                <strong>
+
+                    <i class="bi bi-calculator-fill me-2"></i>
+
+                    Estimated Guess Count
+
+                </strong>
+
+            </div>
+
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+
+                <h1 class="display-5 fw-bold text-primary">
+
+                    {{ "{:,}".format(strength.guesses) }}
+
+                </h1>
+
+                <p class="text-muted mt-3 mb-0">
+
+                    Approximate number of guesses required to discover
+                    this password during an exhaustive brute-force attack.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ====================================================== -->
+    <!-- Password Pattern Analysis -->
+    <!-- ====================================================== -->
+
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm border-0 h-100">
+
+            <div class="card-header bg-dark text-white">
+
+                <strong>
+
+                    <i class="bi bi-search me-2"></i>
+
+                    Detected Password Patterns
+
+                </strong>
+
+            </div>
+
+            <div class="card-body">
+
+                {% if strength.sequence %}
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead class="table-light">
+
+                            <tr>
+
+                                <th style="width:120px">
+
+                                    Severity
+
+                                </th>
+
+                                <th>
+
+                                    Pattern
+
+                                </th>
+
+                                <th>
+
+                                    Security Impact
+
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                        {% for pattern in strength.sequence %}
+
+                            {% set p = pattern.pattern %}
+
+                            <tr>
+
+                                <!-- Severity -->
+
+                                <td>
+
+                                    {% if p == "dictionary" %}
+
+                                        <span class="badge bg-danger">
+
+                                            🔴 High
+
+                                        </span>
+
+                                    {% elif p in [
+                                        "sequence",
+                                        "repeat",
+                                        "spatial",
+                                        "date"
+                                    ] %}
+
+                                        <span class="badge bg-warning text-dark">
+
+                                            🟡 Medium
+
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge bg-success">
+
+                                            🟢 Low
+
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- Pattern Name -->
+
+                                <td>
+
+                                    {% if p == "dictionary" %}
+
+                                        Dictionary Word
+
+                                    {% elif p == "sequence" %}
+
+                                        Character Sequence
+
+                                    {% elif p == "repeat" %}
+
+                                        Repeated Characters
+
+                                    {% elif p == "spatial" %}
+
+                                        Keyboard Pattern
+
+                                    {% elif p == "date" %}
+
+                                        Date Pattern
+
+                                    {% elif p == "bruteforce" %}
+
+                                        Random Characters
+
+                                    {% else %}
+
+                                        {{ p|replace("_"," ")|title }}
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- Security Impact -->
+
+                                <td>
+
+                                    {% if p == "dictionary" %}
+
+                                        Easily guessed using dictionary attacks.
+
+                                    {% elif p == "sequence" %}
+
+                                        Predictable sequential characters reduce resistance.
+
+                                    {% elif p == "repeat" %}
+
+                                        Repeated characters significantly reduce entropy.
+
+                                    {% elif p == "spatial" %}
+
+                                        Keyboard patterns are common attack candidates.
+
+                                    {% elif p == "date" %}
+
+                                        Dates are easily derived from personal information.
+
+                                    {% elif p == "bruteforce" %}
+
+                                        No recognizable human pattern detected.
+
+                                    {% else %}
+
+                                        Pattern detected during password analysis.
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {% else %}
+
+                    <div class="alert alert-success mb-0">
+
+                        <i class="bi bi-check-circle-fill me-2"></i>
+
+                        No recognizable password patterns were identified.
+                        This password appears to be randomly generated.
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ========================================================== -->
+<!-- Overall Security Recommendations -->
+<!-- ========================================================== -->
+
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-success text-white">
+
+        <strong>
+
+            <i class="bi bi-shield-check me-2"></i>
+
+            Overall Security Recommendations
+
+        </strong>
+
+    </div>
+
+    <div class="card-body">
+
+        <ul class="list-group list-group-flush">
+
+            {% if breach.breached %}
+
+            <li class="list-group-item">
+
+                <i class="bi bi-x-octagon-fill text-danger me-2"></i>
+
+                <strong>Replace this password immediately.</strong>
+                It has appeared in publicly known data breaches.
+
+            </li>
+
+            {% endif %}
+
+
+            {% if strength.score < 3 %}
+
+            <li class="list-group-item">
+
+                <i class="bi bi-arrow-up-circle-fill text-warning me-2"></i>
+
+                Increase password complexity by using a longer,
+                more random combination of characters.
+
+            </li>
+
+            {% endif %}
+
+
+            {% if not rules.passed %}
+
+            <li class="list-group-item">
+
+                <i class="bi bi-list-check text-primary me-2"></i>
+
+                Satisfy all password policy requirements before using
+                this password.
+
+            </li>
+
+            {% endif %}
+
+
+            {% if strength.sequence %}
+
+            <li class="list-group-item">
+
+                <i class="bi bi-slash-circle-fill text-danger me-2"></i>
+
+                Avoid predictable words, dates, repeated characters,
+                keyboard patterns and sequential characters.
+
+            </li>
+
+            {% endif %}
+
+
+            {% if email is defined and email.checked and email.breached %}
+
+            <li class="list-group-item">
+
+                <i class="bi bi-envelope-exclamation-fill text-danger me-2"></i>
+
+                Since this email appears in public breaches,
+                enable Multi-Factor Authentication (MFA) and
+                change passwords for all affected accounts.
+
+            </li>
+
+            {% endif %}
+
+
+            <li class="list-group-item">
+
+                <i class="bi bi-key-fill text-success me-2"></i>
+
+                Consider using the built-in Secure Password Generator
+                to create a unique password for every account.
+
+            </li>
+
+            <li class="list-group-item">
+
+                <i class="bi bi-safe2-fill text-primary me-2"></i>
+
+                Store passwords inside a trusted password manager
+                instead of reusing or memorizing weak passwords.
+
+            </li>
+
+        </ul>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================== -->
+<!-- Analysis Summary -->
+<!-- ========================================================== -->
+
+<div class="card border-0 bg-light mb-4">
+
+    <div class="card-body">
+
+        <div class="row text-center">
+
+            <div class="col-md-4">
+
+                <h6 class="text-muted">
+
+                    Analysis Engine
+
+                </h6>
+
+                <strong>
+
+                    zxcvbn + Entropy + HIBP
+
+                </strong>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <h6 class="text-muted">
+
+                    Password Status
+
+                </h6>
+
+                {% if breach.breached %}
+
+                    <span class="badge bg-danger">
+
+                        High Risk
+
+                    </span>
+
+                {% elif strength.score >= 3 and rules.passed %}
+
+                    <span class="badge bg-success">
+
+                        Strong Password
+
+                    </span>
+
+                {% else %}
+
+                    <span class="badge bg-warning text-dark">
+
+                        Needs Improvement
+
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+            <div class="col-md-4">
+
+                <h6 class="text-muted">
+
+                    Security Score
+
+                </h6>
+
+                <strong>
+
+                    {{ strength.score }}/4
+
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================== -->
+<!-- Footer -->
+<!-- ========================================================== -->
+
+<div class="text-center text-muted small mb-4">
+
+    <i class="bi bi-info-circle me-1"></i>
+
+    This report is generated using
+    <strong>zxcvbn</strong>,
+    Shannon Entropy analysis,
+    custom password policy validation,
+    Have I Been Pwned password lookup,
+    and optional Have I Been Pwned email breach verification.
+
+</div>
+
+{% endif %}

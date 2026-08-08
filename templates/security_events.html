@@ -1,0 +1,787 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <!-- ================================================== -->
+    <!-- Page Header -->
+    <!-- ================================================== -->
+
+    <div class="d-flex flex-column flex-md-row
+                justify-content-between align-items-md-center
+                mb-4">
+
+        <div>
+
+            <h2 class="mb-1">
+                <i class="bi bi-shield-exclamation me-2"></i>
+                Security Events
+            </h2>
+
+            <p class="text-muted mb-0">
+                Monitor security events detected by the application.
+            </p>
+
+        </div>
+
+        <div class="mt-3 mt-md-0">
+
+            <span class="badge bg-success">
+                <i class="bi bi-activity me-1"></i>
+                Watchdog Monitoring
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- Statistics Cards -->
+    <!-- ================================================== -->
+
+    <div class="row row-cols-1 row-cols-md-2
+                row-cols-lg-5 g-3 mb-4">
+
+
+        <!-- Total Events -->
+
+        <div class="col">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex
+                                justify-content-between
+                                align-items-center">
+
+                        <div>
+
+                            <h6 class="text-muted mb-2">
+                                Total Events
+                            </h6>
+
+                            <h2 class="mb-0" id="total-events">
+                                {{ counts.get("HIGH", 0)
+                                   + counts.get("ERROR", 0)
+                                   + counts.get("WARNING", 0)
+                                   + counts.get("INFO", 0) }}
+                            </h2>
+
+                        </div>
+
+                        <i class="bi bi-list-check
+                                  fs-1 text-primary"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- High -->
+
+        <div class="col">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex
+                                justify-content-between
+                                align-items-center">
+
+                        <div>
+
+                            <h6 class="text-muted mb-2">
+                                High
+                            </h6>
+
+                            <h2 class="mb-0 text-danger" id="high-events">
+                                {{ counts.get("HIGH", 0) }}
+                            </h2>
+
+                        </div>
+
+                        <i class="bi bi-exclamation-octagon
+                                  fs-1 text-danger"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Error -->
+
+        <div class="col">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex
+                                justify-content-between
+                                align-items-center">
+
+                        <div>
+
+                            <h6 class="text-muted mb-2">
+                                Error
+                            </h6>
+
+                            <h2 class="mb-0 text-warning" id="error-events">
+                                {{ counts.get("ERROR", 0) }}
+                            </h2>
+
+                        </div>
+
+                        <i class="bi bi-x-octagon
+                                  fs-1 text-warning"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Warning -->
+
+        <div class="col">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex
+                                justify-content-between
+                                align-items-center">
+
+                        <div>
+
+                            <h6 class="text-muted mb-2">
+                                Warning
+                            </h6>
+
+                            <h2 class="mb-0 text-warning" id="warning-events">
+                                {{ counts.get("WARNING", 0) }}
+                            </h2>
+
+                        </div>
+
+                        <i class="bi bi-exclamation-triangle
+                                  fs-1 text-warning"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Info -->
+
+        <div class="col">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex
+                                justify-content-between
+                                align-items-center">
+
+                        <div>
+
+                            <h6 class="text-muted mb-2">
+                                Info
+                            </h6>
+
+                            <h2 class="mb-0 text-info" id="info-events">
+                                {{ counts.get("INFO", 0) }}
+                            </h2>
+
+                        </div>
+
+                        <i class="bi bi-info-circle
+                                  fs-1 text-info"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- Recent Security Events -->
+    <!-- ================================================== -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+
+            <div class="d-flex
+                        justify-content-between
+                        align-items-center">
+
+                <strong>
+                    <i class="bi bi-clock-history me-2"></i>
+                    Recent Security Events
+                </strong>
+
+                <span class="badge bg-secondary">
+                    {{ events|length }} displayed
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body p-0">
+
+            {% if events %}
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover
+                                  align-middle mb-0">
+
+                        <thead class="table-light">
+
+                            <tr>
+
+                                <th>Event Type</th>
+
+                                <th>Severity</th>
+
+                                <th>Timestamp</th>
+
+                                <th>Source</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="security-events-table">
+
+                            {% for event in events %}
+
+                                <tr>
+
+                                    <!-- Event Type -->
+
+                                    <td>
+
+                                        <div class="fw-semibold">
+
+                                            {% if event.event_type == "password_breach" %}
+
+                                                <i class="bi bi-key-fill
+                                                          text-danger me-1"></i>
+
+                                            {% elif event.event_type == "email_breach" %}
+
+                                                <i class="bi bi-envelope-exclamation
+                                                          text-danger me-1"></i>
+
+                                            {% elif event.event_type == "api_error" %}
+
+                                                <i class="bi bi-cloud-exclamation
+                                                          text-warning me-1"></i>
+
+                                            {% elif event.event_type == "password_generated" %}
+
+                                                <i class="bi bi-key
+                                                          text-info me-1"></i>
+
+                                            {% elif event.event_type == "password_analysis" %}
+
+                                                <i class="bi bi-search
+                                                          text-info me-1"></i>
+
+                                            {% elif event.event_type == "email_check" %}
+
+                                                <i class="bi bi-envelope-check
+                                                          text-info me-1"></i>
+
+                                            {% else %}
+
+                                                <i class="bi bi-shield
+                                                          text-secondary me-1"></i>
+
+                                            {% endif %}
+
+                                            {{ event.event_type
+                                               |replace("_", " ")
+                                               |title }}
+
+                                        </div>
+
+                                        {% if event.description %}
+
+                                            <small class="text-muted">
+
+                                                {{ event.description }}
+
+                                            </small>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- Severity -->
+
+                                    <td>
+
+                                        {% if event.severity == "HIGH" %}
+
+                                            <span class="badge bg-danger">
+                                                🔴 High
+                                            </span>
+
+                                        {% elif event.severity == "ERROR" %}
+
+                                            <span class="badge bg-warning text-dark">
+                                                🟠 Error
+                                            </span>
+
+                                        {% elif event.severity == "WARNING" %}
+
+                                            <span class="badge bg-warning text-dark">
+                                                🟡 Warning
+                                            </span>
+
+                                        {% elif event.severity == "INFO" %}
+
+                                            <span class="badge bg-info text-dark">
+                                                🔵 Info
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge bg-secondary">
+                                                {{ event.severity }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- Timestamp -->
+
+                                    <td>
+
+                                        <small class="text-muted">
+
+                                            {{ event.timestamp }}
+
+                                        </small>
+
+                                    </td>
+
+
+                                    <!-- Source -->
+
+                                    <td>
+
+                                        <span class="badge bg-light
+                                                     text-dark border">
+
+                                            {{ event.source }}
+
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <!-- Empty State -->
+
+                <div class="text-center py-5">
+
+                    <i class="bi bi-shield-check
+                              fs-1 text-success"></i>
+
+                    <h5 class="mt-3">
+                        No Security Events
+                    </h5>
+
+                    <p class="text-muted mb-0">
+
+                        No security events have been detected yet.
+
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- Footer Information -->
+    <!-- ================================================== -->
+
+    <div class="text-muted small mt-3">
+
+        <i class="bi bi-info-circle me-1"></i>
+
+        Events are generated from the application's security
+        monitoring logs and processed by Watchdog.
+
+    </div>
+
+</div>
+<script>
+    async function refreshSecurityEvents() {
+
+        try {
+
+            const response = await fetch(
+                "{{ url_for('security_events_data') }}"
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    `HTTP ${response.status}`
+                );
+            }
+
+            const data = await response.json();
+
+            updateEventCounters(data.counts);
+
+            updateEventTable(data.events);
+
+        } catch (error) {
+
+            console.error(
+                "Failed to refresh security events:",
+                error
+            );
+
+        }
+    }
+
+
+    function updateEventCounters(counts) {
+
+        const high =
+            counts.HIGH || 0;
+
+        const error =
+            counts.ERROR || 0;
+
+        const warning =
+            counts.WARNING || 0;
+
+        const info =
+            counts.INFO || 0;
+
+        document.getElementById(
+            "high-events"
+        ).textContent = high;
+
+        document.getElementById(
+            "error-events"
+        ).textContent = error;
+
+        document.getElementById(
+            "warning-events"
+        ).textContent = warning;
+
+        document.getElementById(
+            "info-events"
+        ).textContent = info;
+
+        document.getElementById(
+            "total-events"
+        ).textContent =
+            high + error + warning + info;
+    }
+
+
+    function getSeverityBadge(severity) {
+
+        switch (severity) {
+
+            case "HIGH":
+                return `
+                    <span class="badge bg-danger">
+                        🔴 High
+                    </span>
+                `;
+
+            case "ERROR":
+                return `
+                    <span class="badge bg-warning text-dark">
+                        🟠 Error
+                    </span>
+                `;
+
+            case "WARNING":
+                return `
+                    <span class="badge bg-warning text-dark">
+                        🟡 Warning
+                    </span>
+                `;
+
+            case "INFO":
+                return `
+                    <span class="badge bg-info text-dark">
+                        🔵 Info
+                    </span>
+                `;
+
+            default:
+                return `
+                    <span class="badge bg-secondary">
+                        ${escapeHtml(severity)}
+                    </span>
+                `;
+        }
+    }
+
+
+    function getEventIcon(eventType) {
+
+        switch (eventType) {
+
+            case "password_breach":
+                return `
+                    <i class="bi bi-key-fill
+                              text-danger me-1"></i>
+                `;
+
+            case "email_breach":
+                return `
+                    <i class="bi bi-envelope-exclamation
+                              text-danger me-1"></i>
+                `;
+
+            case "api_error":
+                return `
+                    <i class="bi bi-cloud-exclamation
+                              text-warning me-1"></i>
+                `;
+
+            case "password_generated":
+                return `
+                    <i class="bi bi-key
+                              text-info me-1"></i>
+                `;
+
+            case "password_analysis":
+                return `
+                    <i class="bi bi-search
+                              text-info me-1"></i>
+                `;
+
+            case "email_check":
+                return `
+                    <i class="bi bi-envelope-check
+                              text-info me-1"></i>
+                `;
+
+            default:
+                return `
+                    <i class="bi bi-shield
+                              text-secondary me-1"></i>
+                `;
+        }
+    }
+
+
+    function updateEventTable(events) {
+
+        const table =
+            document.getElementById(
+                "security-events-table"
+            );
+
+        if (!table) {
+            return;
+        }
+
+        if (!events || events.length === 0) {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="4"
+                        class="text-center py-5">
+
+                        <i class="bi bi-shield-check
+                                  fs-1 text-success"></i>
+
+                        <div class="mt-3">
+                            No Security Events
+                        </div>
+
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        table.innerHTML = events.map(
+            event => {
+
+                const eventType =
+                    escapeHtml(
+                        formatEventType(
+                            event.event_type
+                        )
+                    );
+
+                const severity =
+                    escapeHtml(
+                        event.severity || ""
+                    );
+
+                const timestamp =
+                    escapeHtml(
+                        event.timestamp || ""
+                    );
+
+                const source =
+                    escapeHtml(
+                        event.source || ""
+                    );
+
+                const description =
+                    escapeHtml(
+                        event.description || ""
+                    );
+
+                return `
+                    <tr>
+
+                        <td>
+
+                            <div class="fw-semibold">
+
+                                ${getEventIcon(
+                                    event.event_type
+                                )}
+
+                                ${eventType}
+
+                            </div>
+
+                            ${
+                                description
+                                ? `
+                                    <small class="text-muted">
+                                        ${description}
+                                    </small>
+                                  `
+                                : ""
+                            }
+
+                        </td>
+
+                        <td>
+                            ${getSeverityBadge(severity)}
+                        </td>
+
+                        <td>
+                            <small class="text-muted">
+                                ${timestamp}
+                            </small>
+                        </td>
+
+                        <td>
+
+                            <span class="badge bg-light
+                                         text-dark border">
+
+                                ${source}
+
+                            </span>
+
+                        </td>
+
+                    </tr>
+                `;
+            }
+        ).join("");
+    }
+
+
+    function formatEventType(value) {
+
+        if (!value) {
+            return "Unknown Event";
+        }
+
+        return value
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, char =>
+                char.toUpperCase()
+            );
+    }
+
+
+    function escapeHtml(value) {
+
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+
+    // Initial refresh
+
+    refreshSecurityEvents();
+
+
+    // Refresh every 5 seconds
+
+    setInterval(
+        refreshSecurityEvents,
+        5000
+    );
+</script>
+
+{% endblock %}
+

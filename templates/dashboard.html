@@ -1,0 +1,424 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- ========================= -->
+    <!-- Header -->
+    <!-- ========================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                Password Security Dashboard
+            </h2>
+
+            <p class="text-muted mb-0">
+                Overview of password analyses and security trends.
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+
+    <a href="/analyze" class="btn btn-primary">
+
+        <i class="bi bi-search"></i>
+
+        Analyze Password
+
+    </a>
+
+    <div class="dropdown">
+
+    <button
+        class="btn btn-success dropdown-toggle"
+        type="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false">
+
+        <i class="bi bi-download"></i>
+        Export Report
+
+    </button>
+
+    <ul class="dropdown-menu">
+
+        <li>
+            <a class="dropdown-item" href="/export/pdf">
+                <i class="bi bi-file-earmark-pdf text-danger"></i>
+                PDF
+            </a>
+        </li>
+
+        <li>
+            <a class="dropdown-item" href="/export/csv">
+                <i class="bi bi-file-earmark-spreadsheet text-success"></i>
+                CSV
+            </a>
+        </li>
+
+        <li>
+            <a class="dropdown-item" href="/export/json">
+                <i class="bi bi-filetype-json text-primary"></i>
+                JSON
+            </a>
+        </li>
+
+    </ul>
+
+</div>
+
+</div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- Statistics Cards -->
+    <!-- ========================= -->
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-5 g-3 mb-4">
+
+        <div class="col">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body text-center">
+		    <i class="bi bi-bar-chart-fill display-6 text-primary"></i>
+                    <h6 class="text-muted">
+                        Total Analyses
+                    </h6>
+
+                    <h2 class="fw-bold">
+                        {{ stats.total }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col">
+
+            <div class="card border-success shadow-sm h-100">
+
+                <div class="card-body text-center">
+		    <i class="bi-shield-check"></i>
+                    <h6 class="text-success">
+                        Strong Passwords
+                    </h6>
+
+                    <h2 class="fw-bold text-success">
+                        {{ stats.strong }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+	
+	<div class="col">
+    		<div class="card shadow-sm h-100 text-center border-warning">
+        		<div class="card-body">
+        		    <i class="bi-exclamation-triangle"></i>
+            			<h6 class="text-warning">
+                			Needs Improvement
+            			</h6>
+
+            		<h1 class="display-5 fw-bold text-warning">
+                	{{ stats.needs_improvement }}
+           		 </h1>
+        		</div>
+    		</div>
+	</div>
+        <div class="col">
+
+            <div class="card border-danger shadow-sm h-100">
+
+                <div class="card-body text-center">
+		    <i class="bi-shield-x"></i>
+                    <h6 class="text-danger">
+                        Breached Passwords
+                    </h6>
+
+                    <h2 class="fw-bold text-danger">
+                        {{ stats.breached }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+	
+        <div class="col">
+
+            <div class="card border-primary shadow-sm h-100">
+
+                <div class="card-body text-center">
+		    <i class="bi-shield-x"></i>
+                    <h6 class="text-primary">
+                        Average Entropy
+                    </h6>
+
+                    <h2 class="fw-bold text-primary">
+
+                        {{ "%.1f"|format(stats.average_entropy or 0) }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- Charts -->
+    <!-- ========================= -->
+
+    <div class="row g-4 mb-5">
+
+        <div class="col-lg-6">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header">
+
+                    <strong>Password Status Distribution</strong>
+
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="statusChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-6">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header">
+
+                    <strong>Entropy Trend</strong>
+
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="entropyChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- Recent Analyses -->
+    <!-- ========================= -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-dark text-white">
+
+            <strong>Recent Password Analyses</strong>
+
+        </div>
+
+        <div class="card-body">
+
+            {% if recent %}
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Length</th>
+                            <th>Entropy</th>
+                            <th>Score</th>
+                            <th>Status</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for analysis in recent %}
+
+                        <tr>
+
+                            <td>{{ analysis.analysis_id }}</td>
+
+                            <td>{{ analysis.timestamp }}</td>
+
+                            <td>{{ analysis.password_length }}</td>
+
+                            <td>{{ "%.1f"|format(analysis.entropy) }}</td>
+
+                            <td>
+
+                                <span class="badge bg-secondary">
+
+                                    {{ analysis.zxcvbn_score }}/4
+
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                {% if analysis.overall_status == "Strong Password" %}
+
+                                    <span class="badge bg-success rounded-pill px-3">
+
+                                        Strong
+
+                                    </span>
+
+                                {% elif analysis.overall_status == "High Risk" %}
+
+                                    <span class="badge bg-danger rounded-pill px-3">
+    					High Risk
+				    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-warning text-dark rounded-pill px-3">
+    					Needs Improvement
+				    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+                <div class="alert alert-info">
+
+                    No password analyses found.
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+<pre>{{ status }}</pre>
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ------------------------
+    // Password Status Pie Chart
+    // ------------------------
+
+    new Chart(
+        document.getElementById("statusChart"),
+        {
+            type: "pie",
+
+            data: {
+
+                labels: {{ status.keys() | list | tojson }},
+
+                datasets: [{
+
+                    data: {{ status.values() | list | tojson }},
+
+                    backgroundColor: [
+                        "#198754",
+                        "#ffc107",
+                        "#dc3545"
+                    ]
+
+                }]
+
+            }
+
+        }
+    );
+
+    // ------------------------
+    // Entropy Trend Line Chart
+    // ------------------------
+
+    new Chart(
+        document.getElementById("entropyChart"),
+        {
+
+            type: "line",
+
+            data: {
+
+                labels: {{ entropy | map(attribute="analysis_id") | list | tojson }},
+
+                datasets: [{
+
+                    label: "Entropy",
+
+                    data: {{ entropy | map(attribute="entropy") | list | tojson }},
+
+                    borderColor: "#0d6efd",
+
+                    backgroundColor: "#0d6efd",
+
+                    borderWidth: 3,
+
+                    fill: false,
+
+                    tension: 0.35
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false
+
+            }
+
+        }
+
+    );
+
+});
+
+</script>
+
+{% endblock %}

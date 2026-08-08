@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class="mb-4">
+    Password Security Toolkit
+</h2>
+
+<p>
+    Analyze passwords, generate secure passwords,
+    and review previous analysis.
+</p>
+
+<div class="d-grid gap-3">
+
+    <a href="/analyze" class="btn btn-primary">
+        Analyze Password
+    </a>
+
+    <a href="/generate" class="btn btn-success">
+        Generate Password
+    </a>
+
+    <a href="/history" class="btn btn-secondary">
+        View History
+    </a>
+
+</div>
+
+{% endblock %}
